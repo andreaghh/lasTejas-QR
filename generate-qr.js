@@ -4,7 +4,7 @@ const QRCode = require("qrcode");
 // 1) After your site is deployed on Netlify,
 //    replace this with your real site URL.
 //    Example: https://lastejas-menu.netlify.app
-const urlToEncode = "https://https://cool-cocada-dedd56.netlify.app/";
+const urlToEncode = "https://lastejas.netlify.app/";
 
 const outputPath = path.join(__dirname, "public", "asset", "menu-qr.png");
 
