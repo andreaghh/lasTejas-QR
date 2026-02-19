@@ -2,54 +2,21 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Las Tejas - Menu</title>
-    <link rel="stylesheet" href="src/style.css" />
   </head>
   <body>
-    <div class="page">
-      <header class="header">
-        <h1 class="restaurant-name">Las Tejas</h1>
-        <p class="tagline">Restaurant Menu</p>
-      </header>
-
-      <main class="content">
-        <section class="menu-section">
-          <h2 class="menu-title">Our Menu</h2>
-          <p class="menu-description">
-            View our latest menu below. You can also download it to keep on your
-            device.
-          </p>
-
-          <div class="menu-viewer">
-            <object
-              data="public/asset/LasTejas - Menu.pdf#toolbar=0&view=FitH"
-              type="application/pdf"
-              aria-label="Las Tejas menu PDF"
-            >
-              <p>
-                Your browser can’t display PDFs. You can
-                <a href="public/asset/LasTejas - Menu.pdf" download>
-                  download the menu here
-                </a>.
-              </p>
-            </object>
-          </div>
-
-          <p class="menu-download">
-            If the menu does not load, click
-            <a href="public/asset/LasTejas - Menu.pdf" target="_blank"
-              >here to open the PDF in a new tab</a
-            >.
-          </p>
-        </section>
-      </main>
-
-      <footer class="footer">
-        <p>© <span id="year"></span> Las Tejas. All rights reserved.</p>
-      </footer>
-    </div>
-
-    <script src="src/app.js"></script>
+    <object
+      data="public/asset/LasTejas - Menu.pdf#toolbar=0&view=FitH"
+      type="application/pdf"
+      width="100%"
+      height="100%"
+    >
+      <p>
+        Your browser can’t display PDFs.
+        <a href="public/asset/LasTejas - Menu.pdf">
+          Download the menu here
+        </a>.
+      </p>
+    </object>
   </body>
-  </html>
+</html>

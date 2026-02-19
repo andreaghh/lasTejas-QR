@@ -108,7 +108,7 @@ body {
 /* ── Menu card ── */
 .menu-section {
   width: 100%;
-  max-width: 980px;
+  max-width: 1120px;
   background: var(--bg-card);
   border-radius: 2px;
   border: 1px solid var(--border);
@@ -168,20 +168,20 @@ body {
 
 /* ── PDF viewer ── */
 .menu-viewer {
-  border-radius: 1px;
-  border: 1px solid var(--border);
-  overflow: hidden;
-  background: var(--surface);
-  padding: 3px;
-  box-shadow: inset 0 0 30px rgba(0,0,0,0.4);
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
 }
 
 .menu-viewer object {
   width: 100%;
-  height: 80vh;
+  height: 90vh;
   border: none;
-  border-radius: 1px;
-  background: var(--surface);
+  border-radius: 0;
+  background: transparent;
   display: block;
 }
 
@@ -192,6 +192,24 @@ body {
   font-family: 'Cormorant Garamond', serif;
   font-size: 1rem;
   text-align: center;
+}
+
+/* ── Flipbook styles ── */
+.flipbook {
+  width: 100%;
+  max-width: 800px;
+  margin: 2rem auto;
+}
+
+.flipbook .flip-page {
+  background: #fff;
+  box-shadow: 0 0 5px rgba(0,0,0,.3);
+}
+
+.flipbook canvas {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 /* ── Download note ── */
@@ -247,7 +265,7 @@ a:hover {
   }
 
   .menu-viewer object {
-    height: 70vh;
+    height: 80vh;
   }
 }
 
@@ -256,5 +274,5 @@ a:hover {
 
   .menu-section { padding: 1.25rem 1rem; }
 
-  .menu-viewer object { height: 65vh; }
+  .menu-viewer object { height: 75vh; }
 }
