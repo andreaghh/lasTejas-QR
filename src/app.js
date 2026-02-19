@@ -2,6 +2,16 @@
 (function () {
   const pdfUrl = "public/asset/LasTejas - Menu.pdf";
 
+  // On small screens (phones) we redirect to the raw PDF,
+  // so the custom viewer should not run.
+  const initialWidth =
+    window.innerWidth ||
+    document.documentElement.clientWidth ||
+    0;
+  if (initialWidth < 768) {
+    return;
+  }
+
   const canvasLeft = document.getElementById("pdfCanvasLeft");
   const canvasRight = document.getElementById("pdfCanvasRight");
   const pageInfo = document.getElementById("pageInfo");
