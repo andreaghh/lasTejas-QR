@@ -2,6 +2,16 @@
 (function () {
   const pdfUrl = "public/asset/LasTejas - Menu.pdf";
 
+  // On small screens (phones) we redirect to the raw PDF,
+  // so the custom viewer should not run.
+  const initialWidth =
+    window.innerWidth ||
+    document.documentElement.clientWidth ||
+    0;
+  if (initialWidth < 768) {
+    return;
+  }
+
   const canvasLeft = document.getElementById("pdfCanvasLeft");
   const canvasRight = document.getElementById("pdfCanvasRight");
   const pageInfo = document.getElementById("pageInfo");
@@ -9,7 +19,14 @@
   const nextBtn = document.getElementById("nextPage");
   const container = document.getElementById("pageContainer");
 
-  if (!canvasLeft || !canvasRight || !pageInfo || !prevBtn || !nextBtn || !container) {
+  if (
+    !canvasLeft ||
+    !canvasRight ||
+    !pageInfo ||
+    !prevBtn ||
+    !nextBtn ||
+    !container
+  ) {
     return;
   }
 
@@ -38,6 +55,14 @@
   let isRendering = false;
   let pendingPage = null;
 
+  function isSinglePageMode() {
+    const w =
+      window.innerWidth ||
+      document.documentElement.clientWidth ||
+      container.clientWidth;
+    return w < 768;
+  }
+
   function updatePageInfo() {
     if (!pdfDoc) {
       pageInfo.textContent = "Loading menu…";
@@ -46,17 +71,25 @@
       return;
     }
 
-    const left = currentPage;
-    const right = Math.min(currentPage + 1, pdfDoc.numPages);
+    const single = isSinglePageMode();
 
-    if (left === right) {
-      pageInfo.textContent = `Page ${left} / ${pdfDoc.numPages}`;
+    if (single) {
+      pageInfo.textContent = `Page ${currentPage} / ${pdfDoc.numPages}`;
     } else {
-      pageInfo.textContent = `Pages ${left}–${right} / ${pdfDoc.numPages}`;
+      const left = currentPage;
+      const right = Math.min(currentPage + 1, pdfDoc.numPages);
+
+      if (left === right) {
+        pageInfo.textContent = `Page ${left} / ${pdfDoc.numPages}`;
+      } else {
+        pageInfo.textContent = `Pages ${left}–${right} / ${pdfDoc.numPages}`;
+      }
     }
 
     prevBtn.disabled = currentPage <= 1;
-    nextBtn.disabled = currentPage + 1 >= pdfDoc.numPages && currentPage >= pdfDoc.numPages;
+    nextBtn.disabled = single
+      ? currentPage >= pdfDoc.numPages
+      : currentPage + 1 >= pdfDoc.numPages;
   }
 
   function getScale(page, pagesPerRow) {
@@ -64,7 +97,12 @@
     const containerWidth = container.clientWidth || window.innerWidth;
     const containerHeight = container.clientHeight || window.innerHeight;
 
-    const maxWidthPerPage = containerWidth / pagesPerRow;
+    let pages = pagesPerRow;
+    if (!pages) {
+      pages = isSinglePageMode() ? 1 : 2;
+    }
+
+    const maxWidthPerPage = containerWidth / pages;
 
     const scale = Math.min(
       maxWidthPerPage / viewport.width,
@@ -81,16 +119,18 @@
   function renderSpread(leftPageNumber) {
     if (!pdfDoc) return;
 
+    const single = isSinglePageMode();
+
     isRendering = true;
     canvasLeft.style.opacity = "0";
     canvasRight.style.opacity = "0";
 
     const promises = [];
 
-    // Render left page
+    // Render left page (or single page in mobile)
     promises.push(
       pdfDoc.getPage(leftPageNumber).then((page) => {
-        const scale = getScale(page, 2);
+        const scale = getScale(page);
         const viewport = page.getViewport({ scale });
 
         canvasLeft.width = viewport.width;
@@ -105,12 +145,12 @@
       })
     );
 
-    // Render right page if it exists
+    // Render right page if it exists and we're in two-page mode
     const rightPageNumber = leftPageNumber + 1;
-    if (rightPageNumber <= pdfDoc.numPages) {
+    if (!single && rightPageNumber <= pdfDoc.numPages) {
       promises.push(
         pdfDoc.getPage(rightPageNumber).then((page) => {
-          const scale = getScale(page, 2);
+          const scale = getScale(page);
           const viewport = page.getViewport({ scale });
 
           canvasRight.width = viewport.width;
@@ -125,7 +165,7 @@
         })
       );
     } else {
-      // No right page (odd last page)
+      // No right page (odd last page or single-page mode)
       clearCanvas(canvasRight, ctxRight);
     }
 
@@ -133,7 +173,7 @@
       .then(() => {
         isRendering = false;
         canvasLeft.style.opacity = "1";
-        if (rightPageNumber <= pdfDoc.numPages) {
+        if (!single && rightPageNumber <= pdfDoc.numPages) {
           canvasRight.style.opacity = "1";
         }
         updatePageInfo();
@@ -167,7 +207,14 @@
     void canvasLeft.offsetWidth;
     void canvasRight.offsetWidth;
 
-    if (direction === "next") {
+    const single = isSinglePageMode();
+
+    if (single) {
+      // En móvil (una página), animamos siempre la izquierda
+      canvasLeft.classList.add(
+        direction === "next" ? "page-flip-next" : "page-flip-prev"
+      );
+    } else if (direction === "next") {
       // Al avanzar, solo se anima la página derecha
       canvasRight.classList.add("page-flip-next");
     } else {
@@ -178,22 +225,36 @@
 
   function showPrev() {
     if (!pdfDoc || currentPage <= 1) return;
-    currentPage = Math.max(1, currentPage - 2);
+
+    const single = isSinglePageMode();
+    if (single) {
+      currentPage = Math.max(1, currentPage - 1);
+    } else {
+      currentPage = Math.max(1, currentPage - 2);
+    }
+
     triggerFlipAnimation("prev");
     queueRender(currentPage);
   }
 
   function showNext() {
     if (!pdfDoc) return;
-    if (currentPage + 1 >= pdfDoc.numPages && currentPage >= pdfDoc.numPages) return;
 
-    const nextLeft = currentPage + 2;
-    if (nextLeft <= pdfDoc.numPages) {
+    const single = isSinglePageMode();
+
+    if (single) {
+      if (currentPage >= pdfDoc.numPages) return;
+      currentPage += 1;
+    } else {
+      const nextLeft = currentPage + 2;
+      if (nextLeft > pdfDoc.numPages) return;
       currentPage = nextLeft;
-      triggerFlipAnimation("next");
-      queueRender(currentPage);
     }
+
+    triggerFlipAnimation("next");
+    queueRender(currentPage);
   }
+
 
   prevBtn.addEventListener("click", showPrev);
   nextBtn.addEventListener("click", showNext);

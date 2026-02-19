@@ -4,6 +4,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Las Tejas - Menu</title>
+    <script>
+      (function () {
+        var w =
+          window.innerWidth ||
+          document.documentElement.clientWidth ||
+          document.body.clientWidth ||
+          0;
+        if (w < 768) {
+          // On phones, open the PDF directly and let the browser handle zoom
+          window.location.replace("public/asset/LasTejas - Menu.pdf");
+        }
+      })();
+    </script>
     <style>
       html,
       body {
@@ -58,7 +71,7 @@
         justify-content: center;
         align-items: center;
         background: #222;
-        overflow: hidden;
+        overflow: auto;
         gap: 1rem;
         perspective: 1600px;
       }
@@ -106,6 +119,22 @@
         }
         100% {
           transform: rotateY(0deg);
+        }
+      }
+
+      /* Mobile: show one page at a time and make it full width */
+      @media (max-width: 768px) {
+        #pageContainer {
+          flex-direction: column;
+          gap: 0;
+        }
+
+        .pageCanvas {
+          max-width: 100%;
+        }
+
+        #pdfCanvasRight {
+          display: none;
         }
       }
     </style>
