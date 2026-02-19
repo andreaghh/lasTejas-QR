@@ -1,90 +1,230 @@
-// Simple flipbook rendering with PDF.js + Turn.js
+// Simple PDF.js viewer with custom "flip" UI (prev/next) showing two pages (spread)
 (function () {
-  const flipbookElement = document.getElementById("flipbook");
-
-  // Show a basic message if required libraries are missing
-  if (!flipbookElement || typeof pdfjsLib === "undefined" || typeof $ === "undefined") {
-    if (flipbookElement) {
-      flipbookElement.textContent = "Flipbook viewer could not be initialized.";
-    }
-    return;
-  }
-
-  // Ensure Turn.js plugin is available
-  if (typeof $.fn.turn !== "function") {
-    flipbookElement.innerHTML =
-      '<p style="padding:1rem;text-align:center;">' +
-      "Flipbook script (Turn.js) is not available.<br />" +
-      '<a href="public/asset/LasTejas - Menu.pdf">Open the PDF directly</a>' +
-      "</p>";
-    return;
-  }
-
-  // PDF.js cannot load files from file:// URLs in most browsers
-  if (window.location.protocol === "file:") {
-    flipbookElement.innerHTML =
-      '<p style="padding:1rem;text-align:center;">' +
-      "To see the flipbook, please open this page from a web server " +
-      "(for example Netlify or a local dev server).<br />" +
-      '<a href="public/asset/LasTejas - Menu.pdf">Open the PDF directly</a>' +
-      "</p>";
-    return;
-  }
-
   const pdfUrl = "public/asset/LasTejas - Menu.pdf";
 
-  // Configure PDF.js worker
+  const canvasLeft = document.getElementById("pdfCanvasLeft");
+  const canvasRight = document.getElementById("pdfCanvasRight");
+  const pageInfo = document.getElementById("pageInfo");
+  const prevBtn = document.getElementById("prevPage");
+  const nextBtn = document.getElementById("nextPage");
+  const container = document.getElementById("pageContainer");
+
+  if (!canvasLeft || !canvasRight || !pageInfo || !prevBtn || !nextBtn || !container) {
+    return;
+  }
+
+  const ctxLeft = canvasLeft.getContext("2d");
+  const ctxRight = canvasRight.getContext("2d");
+
+  // PDF.js must be loaded
+  if (typeof pdfjsLib === "undefined") {
+    pageInfo.textContent = "PDF viewer library not loaded.";
+    return;
+  }
+
+  // Opening from file:// will not work reliably for PDF.js
+  if (window.location.protocol === "file:") {
+    pageInfo.textContent =
+      "Open this page from Netlify or a local web server to see the menu.";
+    return;
+  }
+
+  // Configure the worker script
   pdfjsLib.GlobalWorkerOptions.workerSrc =
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.9.179/pdf.worker.min.js";
 
-  // Show a simple loading message
-  flipbookElement.textContent = "Loading menu…";
+  let pdfDoc = null;
+  let currentPage = 1; // left page of the spread: 1,3,5...
+  let isRendering = false;
+  let pendingPage = null;
 
+  function updatePageInfo() {
+    if (!pdfDoc) {
+      pageInfo.textContent = "Loading menu…";
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+      return;
+    }
+
+    const left = currentPage;
+    const right = Math.min(currentPage + 1, pdfDoc.numPages);
+
+    if (left === right) {
+      pageInfo.textContent = `Page ${left} / ${pdfDoc.numPages}`;
+    } else {
+      pageInfo.textContent = `Pages ${left}–${right} / ${pdfDoc.numPages}`;
+    }
+
+    prevBtn.disabled = currentPage <= 1;
+    nextBtn.disabled = currentPage + 1 >= pdfDoc.numPages && currentPage >= pdfDoc.numPages;
+  }
+
+  function getScale(page, pagesPerRow) {
+    const viewport = page.getViewport({ scale: 1 });
+    const containerWidth = container.clientWidth || window.innerWidth;
+    const containerHeight = container.clientHeight || window.innerHeight;
+
+    const maxWidthPerPage = containerWidth / pagesPerRow;
+
+    const scale = Math.min(
+      maxWidthPerPage / viewport.width,
+      containerHeight / viewport.height
+    );
+
+    return scale || 1;
+  }
+
+  function clearCanvas(canvas, ctx) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  function renderSpread(leftPageNumber) {
+    if (!pdfDoc) return;
+
+    isRendering = true;
+    canvasLeft.style.opacity = "0";
+    canvasRight.style.opacity = "0";
+
+    const promises = [];
+
+    // Render left page
+    promises.push(
+      pdfDoc.getPage(leftPageNumber).then((page) => {
+        const scale = getScale(page, 2);
+        const viewport = page.getViewport({ scale });
+
+        canvasLeft.width = viewport.width;
+        canvasLeft.height = viewport.height;
+
+        const renderCtx = {
+          canvasContext: ctxLeft,
+          viewport,
+        };
+
+        return page.render(renderCtx).promise;
+      })
+    );
+
+    // Render right page if it exists
+    const rightPageNumber = leftPageNumber + 1;
+    if (rightPageNumber <= pdfDoc.numPages) {
+      promises.push(
+        pdfDoc.getPage(rightPageNumber).then((page) => {
+          const scale = getScale(page, 2);
+          const viewport = page.getViewport({ scale });
+
+          canvasRight.width = viewport.width;
+          canvasRight.height = viewport.height;
+
+          const renderCtx = {
+            canvasContext: ctxRight,
+            viewport,
+          };
+
+          return page.render(renderCtx).promise;
+        })
+      );
+    } else {
+      // No right page (odd last page)
+      clearCanvas(canvasRight, ctxRight);
+    }
+
+    return Promise.all(promises)
+      .then(() => {
+        isRendering = false;
+        canvasLeft.style.opacity = "1";
+        if (rightPageNumber <= pdfDoc.numPages) {
+          canvasRight.style.opacity = "1";
+        }
+        updatePageInfo();
+
+        if (pendingPage !== null) {
+          const p = pendingPage;
+          pendingPage = null;
+          renderSpread(p);
+        }
+      })
+      .catch((err) => {
+        console.error("Error rendering pages", err);
+        pageInfo.textContent = "There was a problem showing the menu.";
+      });
+  }
+
+  function queueRender(leftPageNumber) {
+    if (isRendering) {
+      pendingPage = leftPageNumber;
+    } else {
+      renderSpread(leftPageNumber);
+    }
+  }
+
+  function triggerFlipAnimation(direction) {
+    // Clear any previous animation classes
+    canvasLeft.classList.remove("page-flip-next", "page-flip-prev");
+    canvasRight.classList.remove("page-flip-next", "page-flip-prev");
+
+    // Force reflow so animation restarts
+    void canvasLeft.offsetWidth;
+    void canvasRight.offsetWidth;
+
+    if (direction === "next") {
+      // Al avanzar, solo se anima la página derecha
+      canvasRight.classList.add("page-flip-next");
+    } else {
+      // Al retroceder, solo se anima la página izquierda
+      canvasLeft.classList.add("page-flip-prev");
+    }
+  }
+
+  function showPrev() {
+    if (!pdfDoc || currentPage <= 1) return;
+    currentPage = Math.max(1, currentPage - 2);
+    triggerFlipAnimation("prev");
+    queueRender(currentPage);
+  }
+
+  function showNext() {
+    if (!pdfDoc) return;
+    if (currentPage + 1 >= pdfDoc.numPages && currentPage >= pdfDoc.numPages) return;
+
+    const nextLeft = currentPage + 2;
+    if (nextLeft <= pdfDoc.numPages) {
+      currentPage = nextLeft;
+      triggerFlipAnimation("next");
+      queueRender(currentPage);
+    }
+  }
+
+  prevBtn.addEventListener("click", showPrev);
+  nextBtn.addEventListener("click", showNext);
+
+  // Keyboard arrows
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") showPrev();
+    if (e.key === "ArrowRight") showNext();
+  });
+
+  // Re-render on resize to keep the spread fitting the screen
+  window.addEventListener("resize", () => {
+    if (pdfDoc) {
+      queueRender(currentPage);
+    }
+  });
+
+  // Initial state
+  updatePageInfo();
+
+  // Load the PDF
   pdfjsLib
     .getDocument(pdfUrl)
     .promise.then((pdf) => {
-      const totalPages = pdf.numPages;
-      const renderPromises = [];
-
-      for (let pageNumber = 1; pageNumber <= totalPages; pageNumber++) {
-        renderPromises.push(
-          pdf.getPage(pageNumber).then((page) => {
-            const viewport = page.getViewport({ scale: 1.5 });
-            const canvas = document.createElement("canvas");
-            const context = canvas.getContext("2d");
-
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-
-            return page
-              .render({ canvasContext: context, viewport })
-              .promise.then(() => {
-                const pageDiv = document.createElement("div");
-                pageDiv.className = "page";
-                pageDiv.appendChild(canvas);
-                flipbookElement.appendChild(pageDiv);
-              });
-          })
-        );
-      }
-
-      return Promise.all(renderPromises).then(() => {
-        const pageWidth = window.innerWidth / 2;
-        const pageHeight = window.innerHeight;
-
-        $(flipbookElement).turn({
-          width: pageWidth * 2,
-          height: pageHeight,
-          autoCenter: true,
-        });
-      });
+      pdfDoc = pdf;
+      currentPage = 1;
+      updatePageInfo();
+      return renderSpread(currentPage);
     })
     .catch((err) => {
-      console.error("Error loading PDF for flipbook", err);
-      flipbookElement.innerHTML =
-        '<p style="padding:1rem;text-align:center;">' +
-        "There was a problem loading the flipbook.<br />" +
-        '<a href="public/asset/LasTejas - Menu.pdf">Open the PDF directly</a>' +
-        "</p>";
+      console.error("Error loading PDF", err);
+      pageInfo.textContent = "Could not load the menu.";
     });
 })();
