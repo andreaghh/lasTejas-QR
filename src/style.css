@@ -1,11 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600&family=Nunito+Sans:wght@300;400&display=swap');
+
 :root {
-  --bg: #111315;
-  --bg-card: #181b1f;
-  --accent: #e89f3d;
-  --accent-soft: rgba(232, 159, 61, 0.18);
-  --text: #f5f5f5;
-  --muted: #a0a4ab;
-  --border: #2a2f36;
+  --bg:          #0c0b09;
+  --bg-card:     #13110e;
+  --surface:     #1a1714;
+  --accent:      #c9983a;
+  --accent-dim:  rgba(201, 152, 58, 0.12);
+  --accent-glow: rgba(201, 152, 58, 0.06);
+  --text:        #ede8e0;
+  --muted:       #7a7168;
+  --border:      rgba(201, 152, 58, 0.18);
+  --border-soft: rgba(255, 255, 255, 0.05);
 }
 
 *,
@@ -22,128 +27,223 @@ body {
 }
 
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  background: radial-gradient(circle at top, #222530 0, #111315 50%, #050608 100%);
+  font-family: 'Nunito Sans', sans-serif;
+  font-weight: 300;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(201, 152, 58, 0.07) 0%, transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
   color: var(--text);
+  -webkit-font-smoothing: antialiased;
 }
 
+/* ── Page shell ── */
 .page {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: 1.5rem;
+  padding: 2rem 1.5rem;
+  animation: fadeIn 0.9s ease both;
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Header ── */
 .header {
   text-align: center;
-  padding: 1.5rem 1rem 1rem;
+  padding: 2.5rem 1rem 2rem;
+  position: relative;
 }
 
+.header::before,
+.header::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 1px;
+  width: min(320px, 70%);
+  background: linear-gradient(to right, transparent, var(--accent), transparent);
+  opacity: 0.5;
+}
+
+.header::before { top: 0; }
+.header::after  { bottom: 0; }
+
 .restaurant-name {
-  margin: 0;
-  font-size: clamp(2rem, 3vw, 2.6rem);
-  letter-spacing: 0.18em;
+  margin: 0 0 0.6rem;
+  font-family: 'Cinzel', serif;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 600;
+  letter-spacing: 0.35em;
   text-transform: uppercase;
+  color: var(--text);
+  /* subtle gold shimmer */
+  background: linear-gradient(135deg, #ede8e0 30%, var(--accent) 55%, #ede8e0 80%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .tagline {
-  margin: 0.5rem 0 0;
+  margin: 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: clamp(0.85rem, 1.8vw, 1.05rem);
+  letter-spacing: 0.22em;
   color: var(--muted);
-  font-size: 0.95rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
 }
 
+/* ── Main content ── */
 .content {
   flex: 1;
   display: flex;
   justify-content: center;
+  padding: 2rem 0;
 }
 
+/* ── Menu card ── */
 .menu-section {
   width: 100%;
-  max-width: 960px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.02), transparent);
-  border-radius: 1.25rem;
+  max-width: 980px;
+  background: var(--bg-card);
+  border-radius: 2px;
   border: 1px solid var(--border);
-  padding: 1.25rem;
+  padding: 2rem;
   box-shadow:
-    0 18px 45px rgba(0, 0, 0, 0.65),
-    0 0 0 1px rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(18px);
+    0 0 0 1px var(--border-soft),
+    0 24px 60px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
+  position: relative;
+  overflow: hidden;
 }
 
+/* corner ornaments */
+.menu-section::before,
+.menu-section::after {
+  content: '';
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-color: var(--accent);
+  border-style: solid;
+  opacity: 0.4;
+}
+
+.menu-section::before {
+  top: 12px; left: 12px;
+  border-width: 1px 0 0 1px;
+}
+
+.menu-section::after {
+  bottom: 12px; right: 12px;
+  border-width: 0 1px 1px 0;
+}
+
+/* ── Menu heading ── */
 .menu-title {
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.4em;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
   color: var(--accent);
 }
 
 .menu-description {
   margin: 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
   color: var(--muted);
-  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  line-height: 1.7;
 }
 
+/* ── PDF viewer ── */
 .menu-viewer {
-  border-radius: 1rem;
+  border-radius: 1px;
   border: 1px solid var(--border);
   overflow: hidden;
-  background: radial-gradient(circle at top, #222530 0, #15181c 45%, #0b0c10 100%);
-  padding: 0.35rem;
+  background: var(--surface);
+  padding: 3px;
+  box-shadow: inset 0 0 30px rgba(0,0,0,0.4);
 }
 
 .menu-viewer object {
   width: 100%;
   height: 80vh;
   border: none;
-  border-radius: 0.85rem;
-  background: #1d2026;
+  border-radius: 1px;
+  background: var(--surface);
+  display: block;
 }
 
 .menu-viewer p {
   margin: 0;
-  padding: 1.25rem;
+  padding: 2rem;
   color: var(--muted);
-  font-size: 0.95rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  text-align: center;
 }
 
+/* ── Download note ── */
 .menu-download {
   margin: 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.92rem;
   color: var(--muted);
-  font-size: 0.9rem;
+  letter-spacing: 0.03em;
 }
 
+/* ── Links ── */
 a {
   color: var(--accent);
   text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s, opacity 0.2s;
 }
 
 a:hover {
-  text-decoration: underline;
+  border-bottom-color: var(--accent);
+  opacity: 0.85;
 }
 
+/* ── Divider accent line ── */
+.menu-section > .menu-title::after {
+  content: '';
+  display: block;
+  margin-top: 0.6rem;
+  height: 1px;
+  width: 48px;
+  background: var(--accent);
+  opacity: 0.5;
+}
+
+/* ── Footer ── */
 .footer {
   text-align: center;
-  padding: 1rem 0 0.25rem;
-  font-size: 0.8rem;
+  padding: 1.5rem 0 0.5rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
   color: var(--muted);
+  opacity: 0.6;
 }
 
+/* ── Responsive ── */
 @media (max-width: 768px) {
-  .page {
-    padding: 1rem;
-  }
+  .page { padding: 1.25rem 1rem; }
 
   .menu-section {
-    padding: 1rem;
+    padding: 1.5rem 1.25rem;
   }
 
   .menu-viewer object {
@@ -152,7 +252,9 @@ a:hover {
 }
 
 @media (max-width: 480px) {
-  .menu-viewer object {
-    height: 65vh;
-  }
+  .header { padding: 2rem 0.5rem 1.5rem; }
+
+  .menu-section { padding: 1.25rem 1rem; }
+
+  .menu-viewer object { height: 65vh; }
 }

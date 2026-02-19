@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "generate-qr": "node generate-qr.js"
+  },
   "dependencies": {
     "qrcode": "^1.5.4"
   }
