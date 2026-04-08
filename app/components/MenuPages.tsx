@@ -114,39 +114,30 @@ function Note({ text }: { text:string }) {
 export function CoverPage() {
   return (
     <div style={{
-      width:"100%", height:"100%",
-      background:"linear-gradient(145deg, #1a0800 0%, #4a1600 40%, #2a0a00 70%, #1a0800 100%)",
-      display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
-      position:"relative", overflow:"hidden",
+      width: "100%",
+      height: "100%",
+      overflow: "hidden",
+      background: "#7a0817",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
     }}>
-      {/* Texture */}
-      <div style={{ position:"absolute",inset:0,pointerEvents:"none",
-        backgroundImage:`repeating-linear-gradient(45deg,transparent,transparent 28px,rgba(180,80,0,0.045) 28px,rgba(180,80,0,0.045) 29px),repeating-linear-gradient(-45deg,transparent,transparent 28px,rgba(180,80,0,0.045) 28px,rgba(180,80,0,0.045) 29px)` }} />
-      {/* Borders */}
-      <div style={{ position:"absolute", inset:"clamp(10px,2vw,20px)", border:"2px solid rgba(200,140,40,0.4)", borderRadius:3, pointerEvents:"none" }} />
-      <div style={{ position:"absolute", inset:"clamp(16px,3vw,30px)", border:"1px solid rgba(200,140,40,0.15)", borderRadius:2, pointerEvents:"none" }} />
-      {/* Glow */}
-      <div style={{ position:"absolute", inset:0, background:"radial-gradient(ellipse 60% 70% at 50% 50%, rgba(200,100,20,0.12) 0%, transparent 70%)", pointerEvents:"none" }} />
-
-      <div style={{ position:"relative", textAlign:"center", padding:"0 clamp(16px,4vw,40px)" }}>
-        <div style={{ fontSize:"clamp(2rem,6vw,4rem)", marginBottom:"clamp(6px,1.5vh,16px)", filter:"drop-shadow(0 4px 12px rgba(200,100,0,0.5))" }}>🏡</div>
-        <h1 style={{ fontFamily:"'Georgia',serif", fontSize:"clamp(2rem,7vw,5rem)", fontWeight:700, color:"#e8b248", letterSpacing:"-0.02em", lineHeight:0.95, textShadow:"0 4px 24px rgba(200,100,0,0.6)", margin:"0 0 clamp(4px,1vh,10px)" }}>Las Tejas</h1>
-        <div style={{ display:"flex", alignItems:"center", gap:"clamp(6px,1.5vw,12px)", margin:"clamp(6px,1.5vh,14px) auto", maxWidth:260 }}>
-          <div style={{ flex:1, height:1, background:"linear-gradient(90deg,transparent,rgba(200,140,40,0.6))" }} />
-          <span style={{ color:"rgba(200,140,40,0.7)", fontSize:"clamp(0.7rem,2vw,1.1rem)" }}>✦</span>
-          <div style={{ flex:1, height:1, background:"linear-gradient(90deg,rgba(200,140,40,0.6),transparent)" }} />
-        </div>
-        <p style={{ fontFamily:"Georgia,serif", fontSize:"clamp(0.6rem,1.6vw,0.88rem)", color:"rgba(220,160,60,0.75)", letterSpacing:"0.22em", textTransform:"uppercase", marginBottom:"clamp(3px,0.8vh,8px)" }}>Puerto Salvador Allende · Managua</p>
-        <p style={{ fontFamily:"Georgia,serif", fontSize:"clamp(0.6rem,1.5vw,0.85rem)", color:"rgba(220,160,60,0.5)", fontStyle:"italic", marginBottom:"clamp(16px,4vh,36px)" }}>Sabores de Nicaragua con vista al lago</p>
-        <div style={{ display:"inline-block", border:"1.5px solid rgba(200,130,40,0.4)", borderRadius:3, padding:"clamp(5px,1.2vw,8px) clamp(16px,4vw,32px)" }}>
-          <p style={{ fontFamily:impact, fontSize:"clamp(0.75rem,2vw,1.1rem)", color:"rgba(220,155,50,0.7)", letterSpacing:"0.3em", textTransform:"uppercase" }}>Menú</p>
-        </div>
-        <p style={{ marginTop:"clamp(14px,3vh,28px)", fontFamily:sans, fontSize:"clamp(0.5rem,1.2vw,0.62rem)", color:"rgba(200,130,40,0.4)", letterSpacing:"0.12em", animation:"pulse 2.5s infinite" }}>← Scroll o flechas para navegar →</p>
-      </div>
-      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}`}</style>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/cover.png"
+        alt="Las Tejas — Bienvenidos"
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          objectPosition: "center",
+          display: "block",
+        }}
+      />
     </div>
   );
 }
+
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // BACK COVER
